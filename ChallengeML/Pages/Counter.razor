@@ -1,0 +1,86 @@
+﻿@page "/counter"
+
+@using System.Management
+@using System.Diagnostics
+@using Model
+
+@using System.Net.Http
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+
+<h1>Datos</h1>
+<div>
+    <button class="btn btn-primary" @onclick="MostrarInfoSO">Información Sistema Operativo</button>
+    <button class="btn btn-secondary" @onclick="MostrarProcesadores">Ver Procesadores</button>
+    <button class="btn btn-primary" @onclick="MostrarInfoProcesos">Ver Procesos</button>
+</div>
+
+<h2>@mensaje</h2>
+
+<table class="table-bordered">
+    <tbody>
+        @foreach (var item in ListaDeProcesos)
+        {
+            <tr>@item</tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    string mensaje;
+
+    ManagementObjectSearcher ObjetoProcesador = new ManagementObjectSearcher();
+    Procesador procesador = new Procesador();
+
+    List<Process> ListaDeProcesos = new List<Process>();
+    SistemaOperativo sistemaOperativo = new SistemaOperativo();
+
+    string URLBitacora = Datos.ApplicationSettings.Current.ConexionSQL;
+
+    Bitacora oBitacora = new Bitacora();
+
+    protected async Task GrabarMovimientos()
+    {
+
+        var movimiento = await Http.PostAsJsonAsync(URLBitacora, oBitacora);
+
+    }
+
+    private void MostrarProcesadores()
+    {
+        ObjetoProcesador = new ManagementObjectSearcher("select * from Win32_Processor");
+
+        foreach (ManagementObject obj in ObjetoProcesador.Get())
+        {
+
+            procesador.Informacion = obj["Name"].ToString();
+
+        }
+        mensaje = "Procesador | Nombre  -  " + procesador.Informacion;
+
+    }
+
+    private void MostrarInfoProcesos()
+    {
+        foreach (Process proceso in Process.GetProcesses())
+        {
+            ListaDeProcesos.Add(proceso);
+        }
+    }
+
+    ManagementObjectSearcher ObjetoSO = new ManagementObjectSearcher("select * from Win32_OperatingSystem");
+
+    private void MostrarInfoSO()
+    {
+        foreach (ManagementObject obj in ObjetoSO.Get())
+        {
+            sistemaOperativo.Nombre = obj["Caption"].ToString();
+            sistemaOperativo.Version = obj["Version"].ToString();
+        }
+        mensaje = "Sistema Operativo | Nombre: \n" + sistemaOperativo.Nombre +
+                  "Sistema Operativo | Version: \n" + sistemaOperativo.Version;
+    }
+
+}

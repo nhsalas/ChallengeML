@@ -1,0 +1,35 @@
+﻿@page "/bitacora"
+<h3>Bitacora</h3>
+
+@using System.Net.Http
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+
+<h1><strong>Bitácora</strong></h1>
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                FilterMode="FilterMode.Advanced" PageSize="5" AllowPaging="true" AllowSorting="true" Data="@Movimientos" TItem="Bitacora" ColumnWidth="200px"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                LogicalFilterOperator="LogicalFilterOperator.Or">
+    <Columns>
+        <RadzenDataGridColumn TItem="Bitacora" Property="id" Title="Id" />
+        <RadzenDataGridColumn TItem="Bitacora" Property="datos" Title="Datos" />
+        <RadzenDataGridColumn TItem="Bitacora" Property="fechaHora" Title="Datos" />
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+
+    Bitacora oBitacora = new Bitacora();
+
+    public List<Bitacora> Movimientos = new List<Bitacora>();
+
+    string URLBitacora = Datos.ApplicationSettings.Current.ConexionSQL;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Movimientos = await Http.GetFromJsonAsync<List<Bitacora>>(URLBitacora);
+    }
+
+}
